@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 - 2024 Elytrium
+ * Copyright (C) 2021 - 2025 Elytrium
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -167,6 +167,8 @@ public class AuthSessionHandler implements LimboSessionHandler {
         );
         return;
       }
+
+      this.plugin.addAuthenticatingPlayer(player.getProxyPlayer().getUsername(), this);
     }
 
     boolean bossBarEnabled = !this.loginOnlyByMod && Settings.IMP.MAIN.ENABLE_BOSSBAR;
@@ -349,6 +351,7 @@ public class AuthSessionHandler implements LimboSessionHandler {
     }
 
     this.proxyPlayer.hideBossBar(this.bossBar);
+    this.plugin.removeAuthenticatingPlayer(this.player.getProxyPlayer().getUsername());
   }
 
   private void sendMessage(boolean sendTitle) {
@@ -409,7 +412,7 @@ public class AuthSessionHandler implements LimboSessionHandler {
     }
   }
 
-  private void finishLogin() {
+  public void finishLogin() {
     this.proxyPlayer.sendMessage(loginSuccessful);
     if (loginSuccessfulTitle != null) {
       this.proxyPlayer.showTitle(loginSuccessfulTitle);

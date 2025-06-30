@@ -15,15 +15,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.elytrium.limboauth.event;
+package net.elytrium.limboauth.backend.type;
 
-import java.util.function.Consumer;
-import net.elytrium.limboapi.api.player.LimboPlayer;
+import java.util.function.Function;
+import net.elytrium.limboauth.LimboAuth;
+import net.elytrium.limboauth.handler.AuthSessionHandler;
 import net.elytrium.limboauth.model.RegisteredPlayer;
 
-public class PostRegisterEvent extends PostEvent {
+public class StringDatabaseEndpoint extends StringEndpoint {
 
-  public PostRegisterEvent(Consumer<TaskEvent> onComplete, LimboPlayer player, RegisteredPlayer playerInfo, String password) {
-    super(onComplete, player, playerInfo, password);
+  public StringDatabaseEndpoint(LimboAuth plugin, String type, String username, String value) {
+    super(plugin, type, username, value);
+  }
+
+  public StringDatabaseEndpoint(LimboAuth plugin, String type, Function<RegisteredPlayer, String> function) {
+    super(plugin, type, username -> {
+      RegisteredPlayer player = AuthSessionHandler.fetchInfo(plugin.getPlayerDao(), username);
+      if (player == null) {
+        return "";
+      } else {
+        return function.apply(player);
+      }
+    });
   }
 }
