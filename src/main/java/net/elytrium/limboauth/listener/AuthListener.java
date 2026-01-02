@@ -17,6 +17,7 @@
 
 package net.elytrium.limboauth.listener;
 
+import by.mine.fork_limboauth.Lang;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.UpdateBuilder;
 import com.velocitypowered.api.event.PostOrder;
@@ -160,17 +161,6 @@ public class AuthListener {
   public void onPostLogin(PostLoginEvent event) {
     UUID uuid = event.getPlayer().getUniqueId();
 
-    String lang = null;
-    Locale locale = event.getPlayer().getEffectiveLocale();
-    if (locale != null) {
-      lang = locale.getLanguage();
-      if (lang != null) {
-        lang = lang.toUpperCase();
-        this.plugin.setPlayerLanguage(uuid, lang);
-      }
-    }
-    log.info("Lang of " + event.getPlayer().getUsername() + " @ " + lang);
-
     Runnable postLoginTask = this.plugin.getPostLoginTasks().remove(uuid);
     if (postLoginTask != null) {
       // We need to delay for player's client to finish switching the server, it takes a little time.
@@ -184,7 +174,7 @@ public class AuthListener {
   @Subscribe
   public void onDisconnect(DisconnectEvent event) {
     UUID uuid = event.getPlayer().getUniqueId();
-    this.plugin.removePlayerLanguage(uuid);
+    Lang.playerLangs.remove(uuid);
   }
 
   @Subscribe

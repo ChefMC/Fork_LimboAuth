@@ -17,6 +17,7 @@
 
 package net.elytrium.limboauth;
 
+import by.mine.fork_limboauth.Lang;
 import com.google.common.primitives.Bytes;
 import com.google.common.primitives.Longs;
 import com.google.gson.JsonElement;
@@ -159,8 +160,6 @@ public class LimboAuth {
   private final LimboFactory factory;
   private final FloodgateApiHolder floodgateApi;
   private final Map<String, AuthSessionHandler> authenticatingPlayers;
-
-  private final Map<UUID, String> playerLanguages = new ConcurrentHashMap<>();
 
   @Nullable
   private Component loginPremium;
@@ -443,6 +442,8 @@ public class LimboAuth {
         .schedule();
 
     eventManager.fireAndForget(new AuthPluginReloadEvent());
+
+    Lang.invalidate();
   }
 
   private List<String> filterCommands(List<String> commands) {
@@ -866,18 +867,6 @@ public class LimboAuth {
     }
 
     return this.setPremiumCacheLowercased(lowercaseNickname, true).isPremium();
-  }
-
-  public String getPlayerLanguage(UUID uuid) {
-    return this.playerLanguages.get(uuid);
-  }
-
-  public void setPlayerLanguage(UUID uuid, String lang) {
-    this.playerLanguages.put(uuid, lang);
-  }
-
-  public void removePlayerLanguage(UUID uuid) {
-    this.playerLanguages.remove(uuid);
   }
 
   public boolean isPremium(String nickname) {
