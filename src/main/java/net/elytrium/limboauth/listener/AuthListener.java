@@ -21,6 +21,7 @@ import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.UpdateBuilder;
 import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.connection.PostLoginEvent;
 import com.velocitypowered.api.event.connection.PreLoginEvent;
 import com.velocitypowered.api.event.connection.PreLoginEvent.PreLoginComponentResult;
@@ -47,11 +48,14 @@ import net.elytrium.limboauth.handler.AuthSessionHandler;
 import net.elytrium.limboauth.model.RegisteredPlayer;
 import net.elytrium.limboauth.model.SQLRuntimeException;
 import net.kyori.adventure.text.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // TODO: Customizable events priority
 public class AuthListener {
 
   private static final MethodHandle DELEGATE_FIELD;
+  private static final Logger log = LoggerFactory.getLogger(AuthListener.class);
   //private static final MethodHandle LOGIN_FIELD;
 
   private final LimboAuth plugin;
@@ -155,6 +159,18 @@ public class AuthListener {
   @Subscribe
   public void onPostLogin(PostLoginEvent event) {
     UUID uuid = event.getPlayer().getUniqueId();
+
+    String lang = null;
+    Locale locale = event.getPlayer().getEffectiveLocale();
+    if (locale != null) {
+      lang = locale.getLanguage();
+      if (lang != null) {
+        lang = lang.toUpperCase();
+        this.plugin.setPlayerLanguage(uuid, lang);
+      }
+    }
+    log.info("Lang of " + event.getPlayer().getUsername() + " @ " + lang);
+
     Runnable postLoginTask = this.plugin.getPostLoginTasks().remove(uuid);
     if (postLoginTask != null) {
       // We need to delay for player's client to finish switching the server, it takes a little time.
@@ -163,6 +179,12 @@ public class AuthListener {
           .delay(Settings.IMP.MAIN.PREMIUM_AND_FLOODGATE_MESSAGES_DELAY, TimeUnit.MILLISECONDS)
           .schedule();
     }
+  }
+
+  @Subscribe
+  public void onDisconnect(DisconnectEvent event) {
+    UUID uuid = event.getPlayer().getUniqueId();
+    this.plugin.removePlayerLanguage(uuid);
   }
 
   @Subscribe

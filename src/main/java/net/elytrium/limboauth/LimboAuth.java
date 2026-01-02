@@ -66,14 +66,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -166,6 +159,8 @@ public class LimboAuth {
   private final LimboFactory factory;
   private final FloodgateApiHolder floodgateApi;
   private final Map<String, AuthSessionHandler> authenticatingPlayers;
+
+  private final Map<UUID, String> playerLanguages = new ConcurrentHashMap<>();
 
   @Nullable
   private Component loginPremium;
@@ -871,6 +866,18 @@ public class LimboAuth {
     }
 
     return this.setPremiumCacheLowercased(lowercaseNickname, true).isPremium();
+  }
+
+  public String getPlayerLanguage(UUID uuid) {
+    return this.playerLanguages.get(uuid);
+  }
+
+  public void setPlayerLanguage(UUID uuid, String lang) {
+    this.playerLanguages.put(uuid, lang);
+  }
+
+  public void removePlayerLanguage(UUID uuid) {
+    this.playerLanguages.remove(uuid);
   }
 
   public boolean isPremium(String nickname) {
