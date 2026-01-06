@@ -17,27 +17,22 @@
 
 package net.elytrium.limboauth.command;
 
+import by.mine.fork_limboauth.Lang;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.proxy.Player;
 import net.elytrium.limboauth.LimboAuth;
-import net.elytrium.limboauth.Settings;
-import net.kyori.adventure.text.Component;
 
 public abstract class RatelimitedCommand implements SimpleCommand {
 
-  private final Component ratelimited;
-
-  public RatelimitedCommand() {
-    this.ratelimited = LimboAuth.getSerializer().deserialize(Settings.IMP.MAIN.STRINGS.RATELIMITED);
-  }
+  public RatelimitedCommand() {}
 
   @Override
   public final void execute(SimpleCommand.Invocation invocation) {
     CommandSource source = invocation.source();
-    if (source instanceof Player) {
-      if (!LimboAuth.RATELIMITER.attempt(((Player) source).getRemoteAddress().getAddress())) {
-        source.sendMessage(this.ratelimited);
+    if (source instanceof Player proxyPlayer) {
+      if (!LimboAuth.RATELIMITER.attempt(proxyPlayer.getRemoteAddress().getAddress())) {
+        source.sendMessage(LimboAuth.getSerializer().deserialize(Lang.__("RATELIMITED", proxyPlayer)));
         return;
       }
     }

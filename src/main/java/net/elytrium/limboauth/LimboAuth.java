@@ -169,10 +169,6 @@ public class LimboAuth {
   private Component loginFloodgate;
   @Nullable
   private Title loginFloodgateTitle;
-  private Component registrationsDisabledKick;
-  private Component bruteforceAttemptKick;
-  private Component nicknameInvalidKick;
-  private Component reconnectKick;
   private ScheduledTask purgeCacheTask;
   private ScheduledTask purgePremiumCacheTask;
   private ScheduledTask purgeBruteforceCacheTask;
@@ -281,11 +277,6 @@ public class LimboAuth {
           Settings.IMP.MAIN.PREMIUM_TITLE_SETTINGS.toTimes()
       );
     }
-
-    this.bruteforceAttemptKick = SERIALIZER.deserialize(Settings.IMP.MAIN.STRINGS.LOGIN_WRONG_PASSWORD_KICK);
-    this.nicknameInvalidKick = SERIALIZER.deserialize(Settings.IMP.MAIN.STRINGS.NICKNAME_INVALID_KICK);
-    this.reconnectKick = SERIALIZER.deserialize(Settings.IMP.MAIN.STRINGS.RECONNECT_KICK);
-    this.registrationsDisabledKick = SERIALIZER.deserialize(Settings.IMP.MAIN.STRINGS.REGISTRATIONS_DISABLED_KICK);
 
     if (Settings.IMP.MAIN.CHECK_PASSWORD_STRENGTH) {
       try {
@@ -555,18 +546,18 @@ public class LimboAuth {
   public void authPlayer(Player player) {
     boolean isFloodgate = !Settings.IMP.MAIN.FLOODGATE_NEED_AUTH && this.floodgateApi.isFloodgatePlayer(player.getUniqueId());
     if (!isFloodgate && this.isForcedPreviously(player.getUsername()) && this.isPremium(player.getUsername())) {
-      player.disconnect(this.reconnectKick);
+      player.disconnect(LimboAuth.getSerializer().deserialize(Lang.__("RECONNECT_KICK", player)));
       return;
     }
 
     if (this.getBruteforceAttempts(player.getRemoteAddress().getAddress()) >= Settings.IMP.MAIN.BRUTEFORCE_MAX_ATTEMPTS) {
-      player.disconnect(this.bruteforceAttemptKick);
+      player.disconnect(LimboAuth.getSerializer().deserialize(Lang.__("LOGIN_WRONG_PASSWORD_KICK", player)));
       return;
     }
 
     String nickname = player.getUsername();
     if (!this.nicknameValidationPattern.matcher((isFloodgate) ? nickname.substring(this.floodgateApi.getPrefixLength()) : nickname).matches()) {
-      player.disconnect(this.nicknameInvalidKick);
+      player.disconnect(LimboAuth.getSerializer().deserialize(Lang.__("NICKNAME_INVALID_KICK", player)));
       return;
     }
 
@@ -605,18 +596,30 @@ public class LimboAuth {
           // We need to wait for the PLAY connection state to set.
           this.postLoginTasks.put(player.getUniqueId(), () -> {
             if (onlineMode) {
+              String lang = Lang.getPlayerLanguage(player);
               if (this.loginPremium != null) {
-                player.sendMessage(this.loginPremium);
+                player.sendMessage(SERIALIZER.deserialize(Lang.__("LOGIN_PREMIUM", lang)));
               }
               if (this.loginPremiumTitle != null) {
-                player.showTitle(this.loginPremiumTitle);
+                Title title = Title.title(
+                        SERIALIZER.deserialize(Lang.__("LOGIN_PREMIUM_TITLE", lang)),
+                        SERIALIZER.deserialize(Lang.__("LOGIN_PREMIUM_SUBTITLE", lang)),
+                        Settings.IMP.MAIN.PREMIUM_TITLE_SETTINGS.toTimes()
+                );
+                player.showTitle(title);
               }
             } else {
+              String lang = Lang.getPlayerLanguage(player);
               if (this.loginFloodgate != null) {
-                player.sendMessage(this.loginFloodgate);
+                player.sendMessage(SERIALIZER.deserialize(Lang.__("LOGIN_FLOODGATE", lang)));
               }
               if (this.loginFloodgateTitle != null) {
-                player.showTitle(this.loginFloodgateTitle);
+                Title title = Title.title(
+                        SERIALIZER.deserialize(Lang.__("LOGIN_FLOODGATE_TITLE", lang)),
+                        SERIALIZER.deserialize(Lang.__("LOGIN_FLOODGATE_SUBTITLE", lang)),
+                        Settings.IMP.MAIN.PREMIUM_TITLE_SETTINGS.toTimes()
+                );
+                player.showTitle(title);
               }
             }
           });
@@ -629,7 +632,7 @@ public class LimboAuth {
     EventManager eventManager = this.server.getEventManager();
     if (registeredPlayer == null) {
       if (Settings.IMP.MAIN.DISABLE_REGISTRATIONS) {
-        player.disconnect(this.registrationsDisabledKick);
+        player.disconnect(LimboAuth.getSerializer().deserialize(Lang.__("REGISTRATIONS_DISABLED_KICK", player)));
         return;
       }
 

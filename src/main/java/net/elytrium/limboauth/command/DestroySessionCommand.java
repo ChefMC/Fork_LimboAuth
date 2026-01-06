@@ -17,6 +17,7 @@
 
 package net.elytrium.limboauth.command;
 
+import by.mine.fork_limboauth.Lang;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.proxy.Player;
@@ -29,22 +30,20 @@ public class DestroySessionCommand extends RatelimitedCommand {
 
   private final LimboAuth plugin;
 
-  private final Component successful;
   private final Component notPlayer;
 
   public DestroySessionCommand(LimboAuth plugin) {
     this.plugin = plugin;
 
     Serializer serializer = LimboAuth.getSerializer();
-    this.successful = serializer.deserialize(Settings.IMP.MAIN.STRINGS.DESTROY_SESSION_SUCCESSFUL);
     this.notPlayer = serializer.deserialize(Settings.IMP.MAIN.STRINGS.NOT_PLAYER);
   }
 
   @Override
   public void execute(CommandSource source, String[] args) {
-    if (source instanceof Player) {
-      this.plugin.removePlayerFromCache(((Player) source).getUsername());
-      source.sendMessage(this.successful);
+    if (source instanceof Player proxyPlayer) {
+      this.plugin.removePlayerFromCache(proxyPlayer.getUsername());
+      source.sendMessage(LimboAuth.getSerializer().deserialize(Lang.__("DESTROY_SESSION_SUCCESSFUL", proxyPlayer)));
     } else {
       source.sendMessage(this.notPlayer);
     }

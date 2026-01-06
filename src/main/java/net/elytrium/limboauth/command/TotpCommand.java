@@ -17,6 +17,7 @@
 
 package net.elytrium.limboauth.command;
 
+import by.mine.fork_limboauth.Lang;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.UpdateBuilder;
 import com.velocitypowered.api.command.CommandSource;
@@ -47,54 +48,32 @@ public class TotpCommand extends RatelimitedCommand {
   private final Dao<RegisteredPlayer, String> playerDao;
 
   private final Component notPlayer;
-  private final Component usage;
   private final boolean needPassword;
-  private final Component notRegistered;
-  private final Component wrongPassword;
-  private final Component alreadyEnabled;
-  private final Component errorOccurred;
-  private final Component successful;
   private final String issuer;
   private final String qrGeneratorUrl;
-  private final Component qr;
-  private final String token;
   private final int recoveryCodesAmount;
-  private final String recovery;
-  private final Component disabled;
-  private final Component wrong;
-  private final Component crackedCommand;
 
   public TotpCommand(Dao<RegisteredPlayer, String> playerDao) {
     this.playerDao = playerDao;
 
     Serializer serializer = LimboAuth.getSerializer();
     this.notPlayer = serializer.deserialize(Settings.IMP.MAIN.STRINGS.NOT_PLAYER);
-    this.usage = serializer.deserialize(Settings.IMP.MAIN.STRINGS.TOTP_USAGE);
     this.needPassword = Settings.IMP.MAIN.TOTP_NEED_PASSWORD;
-    this.notRegistered = serializer.deserialize(Settings.IMP.MAIN.STRINGS.NOT_REGISTERED);
-    this.wrongPassword = serializer.deserialize(Settings.IMP.MAIN.STRINGS.WRONG_PASSWORD);
-    this.alreadyEnabled = serializer.deserialize(Settings.IMP.MAIN.STRINGS.TOTP_ALREADY_ENABLED);
-    this.errorOccurred = serializer.deserialize(Settings.IMP.MAIN.STRINGS.ERROR_OCCURRED);
-    this.successful = serializer.deserialize(Settings.IMP.MAIN.STRINGS.TOTP_SUCCESSFUL);
     this.issuer = Settings.IMP.MAIN.TOTP_ISSUER;
     this.qrGeneratorUrl = Settings.IMP.MAIN.QR_GENERATOR_URL;
-    this.qr = serializer.deserialize(Settings.IMP.MAIN.STRINGS.TOTP_QR);
-    this.token = Settings.IMP.MAIN.STRINGS.TOTP_TOKEN;
     this.recoveryCodesAmount = Settings.IMP.MAIN.TOTP_RECOVERY_CODES_AMOUNT;
-    this.recovery = Settings.IMP.MAIN.STRINGS.TOTP_RECOVERY;
-    this.disabled = serializer.deserialize(Settings.IMP.MAIN.STRINGS.TOTP_DISABLED);
-    this.wrong = serializer.deserialize(Settings.IMP.MAIN.STRINGS.TOTP_WRONG);
-    this.crackedCommand = serializer.deserialize(Settings.IMP.MAIN.STRINGS.CRACKED_COMMAND);
   }
 
   // TODO: Rewrite.
   @Override
   public void execute(CommandSource source, String[] args) {
-    if (source instanceof Player) {
+    if (source instanceof Player proxyPlayer) {
+      String lang = Lang.getPlayerLanguage(proxyPlayer);
+      Serializer serializer = LimboAuth.getSerializer();
       if (args.length == 0) {
-        source.sendMessage(this.usage);
+        source.sendMessage(serializer.deserialize(Lang.__("TOTP_USAGE", lang)));
       } else {
-        String username = ((Player) source).getUsername();
+        String username = proxyPlayer.getUsername();
         String usernameLowercase = username.toLowerCase(Locale.ROOT);
 
         RegisteredPlayer playerInfo;
@@ -103,18 +82,18 @@ public class TotpCommand extends RatelimitedCommand {
           if (this.needPassword ? args.length == 2 : args.length == 1) {
             playerInfo = AuthSessionHandler.fetchInfoLowercased(this.playerDao, usernameLowercase);
             if (playerInfo == null) {
-              source.sendMessage(this.notRegistered);
+              source.sendMessage(serializer.deserialize(Lang.__("NOT_REGISTERED", lang)));
               return;
             } else if (playerInfo.getHash().isEmpty()) {
-              source.sendMessage(this.crackedCommand);
+              source.sendMessage(serializer.deserialize(Lang.__("CRACKED_COMMAND", lang)));
               return;
             } else if (this.needPassword && !AuthSessionHandler.checkPassword(args[1], playerInfo, this.playerDao)) {
-              source.sendMessage(this.wrongPassword);
+              source.sendMessage(serializer.deserialize(Lang.__("WRONG_PASSWORD", lang)));
               return;
             }
 
             if (!playerInfo.getTotpToken().isEmpty()) {
-              source.sendMessage(this.alreadyEnabled);
+              source.sendMessage(serializer.deserialize(Lang.__("TOTP_ALREADY_ENABLED", lang)));
               return;
             }
 
@@ -125,10 +104,10 @@ public class TotpCommand extends RatelimitedCommand {
               updateBuilder.updateColumnValue(RegisteredPlayer.TOTP_TOKEN_FIELD, secret);
               updateBuilder.update();
             } catch (SQLException e) {
-              source.sendMessage(this.errorOccurred);
+              source.sendMessage(serializer.deserialize(Lang.__("ERROR_OCCURRED", lang)));
               throw new SQLRuntimeException(e);
             }
-            source.sendMessage(this.successful);
+            source.sendMessage(serializer.deserialize(Lang.__("TOTP_SUCCESSFUL", lang)));
 
             QrData data = new QrData.Builder()
                 .label(username)
@@ -136,23 +115,22 @@ public class TotpCommand extends RatelimitedCommand {
                 .issuer(this.issuer)
                 .build();
             String qrUrl = this.qrGeneratorUrl.replace("{data}", URLEncoder.encode(data.getUri(), StandardCharsets.UTF_8));
-            source.sendMessage(this.qr.clickEvent(ClickEvent.openUrl(qrUrl)));
+            source.sendMessage(serializer.deserialize(Lang.__("TOTP_QR", lang)).clickEvent(ClickEvent.openUrl(qrUrl)));
 
-            Serializer serializer = LimboAuth.getSerializer();
-            source.sendMessage(serializer.deserialize(MessageFormat.format(this.token, secret))
+            source.sendMessage(serializer.deserialize(Lang.__("TOTP_TOKEN", lang, secret))
                 .clickEvent(ClickEvent.copyToClipboard(secret)));
             String codes = String.join(", ", this.codesGenerator.generateCodes(this.recoveryCodesAmount));
-            source.sendMessage(serializer.deserialize(MessageFormat.format(this.recovery, codes))
+            source.sendMessage(serializer.deserialize(Lang.__("TOTP_RECOVERY", lang, codes))
                 .clickEvent(ClickEvent.copyToClipboard(codes)));
           } else {
-            source.sendMessage(this.usage);
+            source.sendMessage(serializer.deserialize(Lang.__("TOTP_USAGE", lang)));
           }
         } else if (args[0].equalsIgnoreCase("disable")) {
           if (args.length == 2) {
             playerInfo = AuthSessionHandler.fetchInfoLowercased(this.playerDao, usernameLowercase);
 
             if (playerInfo == null) {
-              source.sendMessage(this.notRegistered);
+              source.sendMessage(serializer.deserialize(Lang.__("ERROR_OCCURRED", lang)));
               return;
             }
 
@@ -163,19 +141,19 @@ public class TotpCommand extends RatelimitedCommand {
                 updateBuilder.updateColumnValue(RegisteredPlayer.TOTP_TOKEN_FIELD, "");
                 updateBuilder.update();
 
-                source.sendMessage(this.disabled);
+                source.sendMessage(serializer.deserialize(Lang.__("TOTP_DISABLED", lang)));
               } catch (SQLException e) {
-                source.sendMessage(this.errorOccurred);
+                source.sendMessage(serializer.deserialize(Lang.__("ERROR_OCCURRED", lang)));
                 throw new SQLRuntimeException(e);
               }
             } else {
-              source.sendMessage(this.wrong);
+              source.sendMessage(serializer.deserialize(Lang.__("TOTP_WRONG", lang)));
             }
           } else {
-            source.sendMessage(this.usage);
+            source.sendMessage(serializer.deserialize(Lang.__("TOTP_USAGE", lang)));
           }
         } else {
-          source.sendMessage(this.usage);
+          source.sendMessage(serializer.deserialize(Lang.__("TOTP_USAGE", lang)));
         }
       }
     } else {

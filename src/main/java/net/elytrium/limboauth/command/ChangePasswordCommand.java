@@ -17,6 +17,7 @@
 
 package net.elytrium.limboauth.command;
 
+import by.mine.fork_limboauth.Lang;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.UpdateBuilder;
 import com.velocitypowered.api.command.CommandSource;
@@ -39,11 +40,6 @@ public class ChangePasswordCommand extends RatelimitedCommand {
   private final Dao<RegisteredPlayer, String> playerDao;
 
   private final boolean needOldPass;
-  private final Component notRegistered;
-  private final Component wrongPassword;
-  private final Component successful;
-  private final Component errorOccurred;
-  private final Component usage;
   private final Component notPlayer;
 
   public ChangePasswordCommand(LimboAuth plugin, Dao<RegisteredPlayer, String> playerDao) {
@@ -52,22 +48,17 @@ public class ChangePasswordCommand extends RatelimitedCommand {
 
     Serializer serializer = LimboAuth.getSerializer();
     this.needOldPass = Settings.IMP.MAIN.CHANGE_PASSWORD_NEED_OLD_PASSWORD;
-    this.notRegistered = serializer.deserialize(Settings.IMP.MAIN.STRINGS.NOT_REGISTERED);
-    this.wrongPassword = serializer.deserialize(Settings.IMP.MAIN.STRINGS.WRONG_PASSWORD);
-    this.successful = serializer.deserialize(Settings.IMP.MAIN.STRINGS.CHANGE_PASSWORD_SUCCESSFUL);
-    this.errorOccurred = serializer.deserialize(Settings.IMP.MAIN.STRINGS.ERROR_OCCURRED);
-    this.usage = serializer.deserialize(Settings.IMP.MAIN.STRINGS.CHANGE_PASSWORD_USAGE);
     this.notPlayer = serializer.deserialize(Settings.IMP.MAIN.STRINGS.NOT_PLAYER);
   }
 
   @Override
   public void execute(CommandSource source, String[] args) {
-    if (source instanceof Player) {
-      String usernameLowercase = ((Player) source).getUsername().toLowerCase(Locale.ROOT);
+    if (source instanceof Player proxyPlayer) {
+      String usernameLowercase = proxyPlayer.getUsername().toLowerCase(Locale.ROOT);
       RegisteredPlayer player = AuthSessionHandler.fetchInfoLowercased(this.playerDao, usernameLowercase);
 
       if (player == null) {
-        source.sendMessage(this.notRegistered);
+        source.sendMessage(LimboAuth.getSerializer().deserialize(Lang.__("NOT_REGISTERED", proxyPlayer)));
         return;
       }
 
@@ -75,16 +66,16 @@ public class ChangePasswordCommand extends RatelimitedCommand {
       boolean needOldPass = this.needOldPass && !onlineMode;
       if (needOldPass) {
         if (args.length < 2) {
-          source.sendMessage(this.usage);
+          source.sendMessage(LimboAuth.getSerializer().deserialize(Lang.__("CHANGE_PASSWORD_USAGE", proxyPlayer)));
           return;
         }
 
         if (!AuthSessionHandler.checkPassword(args[0], player, this.playerDao)) {
-          source.sendMessage(this.wrongPassword);
+          source.sendMessage(LimboAuth.getSerializer().deserialize(Lang.__("WRONG_PASSWORD", proxyPlayer)));
           return;
         }
       } else if (args.length < 1) {
-        source.sendMessage(this.usage);
+        source.sendMessage(LimboAuth.getSerializer().deserialize(Lang.__("CHANGE_PASSWORD_USAGE", proxyPlayer)));
         return;
       }
 
@@ -103,9 +94,9 @@ public class ChangePasswordCommand extends RatelimitedCommand {
         this.plugin.getServer().getEventManager().fireAndForget(
             new ChangePasswordEvent(player, needOldPass ? args[0] : null, oldHash, newPassword, newHash));
 
-        source.sendMessage(this.successful);
+        source.sendMessage(LimboAuth.getSerializer().deserialize(Lang.__("CHANGE_PASSWORD_SUCCESSFUL", proxyPlayer)));
       } catch (SQLException e) {
-        source.sendMessage(this.errorOccurred);
+        source.sendMessage(LimboAuth.getSerializer().deserialize(Lang.__("ERROR_OCCURRED", proxyPlayer)));
         throw new SQLRuntimeException(e);
       }
     } else {

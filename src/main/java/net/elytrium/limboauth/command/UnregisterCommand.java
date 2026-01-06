@@ -17,6 +17,7 @@
 
 package net.elytrium.limboauth.command;
 
+import by.mine.fork_limboauth.Lang;
 import com.j256.ormlite.dao.Dao;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;
@@ -39,12 +40,6 @@ public class UnregisterCommand extends RatelimitedCommand {
 
   private final String confirmKeyword;
   private final Component notPlayer;
-  private final Component notRegistered;
-  private final Component successful;
-  private final Component errorOccurred;
-  private final Component wrongPassword;
-  private final Component usage;
-  private final Component crackedCommand;
 
   public UnregisterCommand(LimboAuth plugin, Dao<RegisteredPlayer, String> playerDao) {
     this.plugin = plugin;
@@ -53,45 +48,39 @@ public class UnregisterCommand extends RatelimitedCommand {
     Serializer serializer = LimboAuth.getSerializer();
     this.confirmKeyword = Settings.IMP.MAIN.CONFIRM_KEYWORD;
     this.notPlayer = serializer.deserialize(Settings.IMP.MAIN.STRINGS.NOT_PLAYER);
-    this.notRegistered = serializer.deserialize(Settings.IMP.MAIN.STRINGS.NOT_REGISTERED);
-    this.successful = serializer.deserialize(Settings.IMP.MAIN.STRINGS.UNREGISTER_SUCCESSFUL);
-    this.errorOccurred = serializer.deserialize(Settings.IMP.MAIN.STRINGS.ERROR_OCCURRED);
-    this.wrongPassword = serializer.deserialize(Settings.IMP.MAIN.STRINGS.WRONG_PASSWORD);
-    this.usage = serializer.deserialize(Settings.IMP.MAIN.STRINGS.UNREGISTER_USAGE);
-    this.crackedCommand = serializer.deserialize(Settings.IMP.MAIN.STRINGS.CRACKED_COMMAND);
   }
 
   @Override
   public void execute(CommandSource source, String[] args) {
-    if (source instanceof Player) {
+    if (source instanceof Player proxyPlayer) {
       if (args.length == 2) {
         if (this.confirmKeyword.equalsIgnoreCase(args[1])) {
-          String username = ((Player) source).getUsername();
+          String username = proxyPlayer.getUsername();
           String usernameLowercase = username.toLowerCase(Locale.ROOT);
           RegisteredPlayer player = AuthSessionHandler.fetchInfoLowercased(this.playerDao, usernameLowercase);
           if (player == null) {
-            source.sendMessage(this.notRegistered);
+            source.sendMessage(LimboAuth.getSerializer().deserialize(Lang.__("NOT_REGISTERED", proxyPlayer)));
           } else if (player.getHash().isEmpty()) {
-            source.sendMessage(this.crackedCommand);
+            source.sendMessage(LimboAuth.getSerializer().deserialize(Lang.__("CRACKED_COMMAND", proxyPlayer)));
           } else if (AuthSessionHandler.checkPassword(args[0], player, this.playerDao)) {
             try {
               this.plugin.getServer().getEventManager().fireAndForget(new AuthUnregisterEvent(username));
               this.playerDao.deleteById(usernameLowercase);
               this.plugin.removePlayerFromCacheLowercased(usernameLowercase);
-              ((Player) source).disconnect(this.successful);
+              proxyPlayer.disconnect(LimboAuth.getSerializer().deserialize(Lang.__("UNREGISTER_SUCCESSFUL", proxyPlayer)));
             } catch (SQLException e) {
-              source.sendMessage(this.errorOccurred);
+              source.sendMessage(LimboAuth.getSerializer().deserialize(Lang.__("ERROR_OCCURRED", proxyPlayer)));
               throw new SQLRuntimeException(e);
             }
           } else {
-            source.sendMessage(this.wrongPassword);
+            source.sendMessage(LimboAuth.getSerializer().deserialize(Lang.__("WRONG_PASSWORD", proxyPlayer)));
           }
 
           return;
         }
       }
 
-      source.sendMessage(this.usage);
+      source.sendMessage(LimboAuth.getSerializer().deserialize(Lang.__("UNREGISTER_USAGE", proxyPlayer)));
     } else {
       source.sendMessage(this.notPlayer);
     }
