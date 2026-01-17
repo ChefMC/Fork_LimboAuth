@@ -17,7 +17,7 @@
 
 package net.elytrium.limboauth.command;
 
-import by.mine.fork_limboauth.Lang;
+import net.elytrium.limboauth._mine_by_.Lang;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.UpdateBuilder;
 import com.velocitypowered.api.command.CommandSource;
@@ -30,7 +30,6 @@ import dev.samstevens.totp.secret.SecretGenerator;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.Locale;
 import net.elytrium.commons.kyori.serialization.Serializer;
 import net.elytrium.limboauth.LimboAuth;

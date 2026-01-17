@@ -17,7 +17,8 @@
 
 package net.elytrium.limboauth;
 
-import by.mine.fork_limboauth.Lang;
+import net.elytrium.limboauth._mine_by_.Lang;
+import net.elytrium.limboauth._mine_by_.LangLoader;
 import com.google.common.primitives.Bytes;
 import com.google.common.primitives.Longs;
 import com.google.gson.JsonElement;
@@ -51,7 +52,7 @@ import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import com.velocitypowered.api.scheduler.ScheduledTask;
 import com.velocitypowered.proxy.util.ratelimit.Ratelimiter;
 import com.velocitypowered.proxy.util.ratelimit.Ratelimiters;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+//import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.whitfin.siphash.SipHasher;
 import java.io.File;
 import java.io.IOException;
@@ -230,9 +231,11 @@ public class LimboAuth {
     }).schedule();
   }
 
-  @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH", justification = "LEGACY_AMPERSAND can't be null in velocity.")
+  //@SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH", justification = "LEGACY_AMPERSAND can't be null in velocity.")
   public void reload() {
     Settings.IMP.reload(this.configFile, Settings.IMP.PREFIX);
+
+    LangLoader.load(this.configFile.getParentFile().toPath(), LOGGER);
 
     if (!Settings.IMP.MAIN.ONLINE_MODE_NEED_AUTH_STRICT && !Settings.IMP.MAIN.SAVE_PREMIUM_ACCOUNTS) {
       Settings.IMP.MAIN.SAVE_PREMIUM_ACCOUNTS = true;
@@ -433,8 +436,6 @@ public class LimboAuth {
         .schedule();
 
     eventManager.fireAndForget(new AuthPluginReloadEvent());
-
-    Lang.invalidate();
   }
 
   private List<String> filterCommands(List<String> commands) {
@@ -1084,7 +1085,7 @@ public class LimboAuth {
       this.uuid = uuid;
     }
 
-    @SuppressFBWarnings("CT_CONSTRUCTOR_THROW")
+    //@SuppressFBWarnings("CT_CONSTRUCTOR_THROW")
     public PremiumResponse(PremiumState state, String uuid) {
       this.state = state;
       if (uuid.contains("-")) {

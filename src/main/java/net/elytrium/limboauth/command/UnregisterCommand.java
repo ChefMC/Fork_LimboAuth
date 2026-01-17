@@ -17,7 +17,7 @@
 
 package net.elytrium.limboauth.command;
 
-import by.mine.fork_limboauth.Lang;
+import net.elytrium.limboauth._mine_by_.Lang;
 import com.j256.ormlite.dao.Dao;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;

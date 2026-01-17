@@ -17,7 +17,7 @@
 
 package net.elytrium.limboauth.command;
 
-import by.mine.fork_limboauth.Lang;
+import net.elytrium.limboauth._mine_by_.Lang;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.proxy.Player;

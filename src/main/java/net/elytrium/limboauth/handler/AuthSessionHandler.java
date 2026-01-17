@@ -18,7 +18,7 @@
 package net.elytrium.limboauth.handler;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
-import by.mine.fork_limboauth.Lang;
+import net.elytrium.limboauth._mine_by_.Lang;
 import com.google.common.primitives.Longs;
 import com.j256.ormlite.dao.Dao;
 import com.velocitypowered.api.proxy.Player;
@@ -374,11 +374,12 @@ public class AuthSessionHandler implements LimboSessionHandler {
     } else {
       String lang = Lang.getPlayerLanguage(proxyPlayer);
       Serializer serializer = LimboAuth.getSerializer();
-      this.proxyPlayer.sendMessage(serializer.deserialize(Lang.__("LOGIN", lang, String.valueOf(this.attempts))));
+      String attemptsStr = String.valueOf(this.attempts);
+      this.proxyPlayer.sendMessage(serializer.deserialize(Lang.__("LOGIN", lang, attemptsStr)));
       if (sendTitle && loginTitle != null) {
         Title title = Title.title(
                 serializer.deserialize(Lang.__("LOGIN_TITLE", lang)),
-                serializer.deserialize(Lang.__("LOGIN_SUBTITLE", lang)),
+                serializer.deserialize(Lang.__("LOGIN_SUBTITLE", lang, attemptsStr)),
                 Settings.IMP.MAIN.CRACKED_TITLE_SETTINGS.toTimes()
         );
         this.proxyPlayer.showTitle(title);

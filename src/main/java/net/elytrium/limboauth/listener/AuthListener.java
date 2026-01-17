@@ -17,7 +17,7 @@
 
 package net.elytrium.limboauth.listener;
 
-import by.mine.fork_limboauth.Lang;
+import net.elytrium.limboauth._mine_by_.Lang;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.UpdateBuilder;
 import com.velocitypowered.api.event.PostOrder;

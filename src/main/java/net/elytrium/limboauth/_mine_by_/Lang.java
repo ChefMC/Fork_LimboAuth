@@ -1,4 +1,4 @@
-package by.mine.fork_limboauth;
+package net.elytrium.limboauth._mine_by_;
 
 import com.velocitypowered.api.proxy.Player;
 
@@ -60,10 +60,7 @@ public class Lang {
 		String locale = null;
 		Locale localeObj = player.getEffectiveLocale();
 		if (localeObj != null) {
-			locale = localeObj.getLanguage();
-			if (locale != null) {
-				locale = locale.toLowerCase();
-			}
+			locale = localeObj.toLanguageTag().replace("-", "_").toLowerCase(Locale.ROOT);
 		}
 
 		if (locale != null) {
@@ -76,14 +73,14 @@ public class Lang {
 			// Russian-speaking locales (just fallback and only if any exact of them is not presented in config)
 			if (
 					locale.startsWith("ru_") ||
-							locale.startsWith("be_") ||
-							locale.startsWith("kk_") ||
-							locale.startsWith("ry_") ||
-							locale.startsWith("sah_") ||
-							locale.equals("tt_ru") ||
-							locale.equals("ba_ru") ||
-							locale.equals("uk_ua") ||
-							locale.equals("rpr")
+					locale.startsWith("be_") ||
+					locale.startsWith("kk_") ||
+					locale.startsWith("ry_") ||
+					locale.startsWith("sah_") ||
+					locale.equals("tt_ru") ||
+					locale.equals("ba_ru") ||
+					locale.equals("uk_ua") ||
+					locale.equals("rpr")
 			) {
 				playerLangs.put(player.getUniqueId(), "ru");
 				return "ru";

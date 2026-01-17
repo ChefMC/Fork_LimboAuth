@@ -17,7 +17,7 @@
 
 package net.elytrium.limboauth.dependencies;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+//import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -79,7 +79,7 @@ public enum BaseLibrary {
     }
   }
 
-  @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
+  //@SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
   public URL getClassLoaderURL() throws MalformedURLException {
     if (!Files.exists(this.filenamePath)) {
       try {

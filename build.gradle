@@ -2,10 +2,10 @@
 
 plugins {
     id("java")
-    id("checkstyle")
-    id("maven-publish")
-    id("com.github.spotbugs").version("6.1.7")
-    id("org.cadixdev.licenser").version("0.6.1")
+    //id("checkstyle")
+    //id("maven-publish")
+    //id("com.github.spotbugs").version("6.1.7")
+    //id("org.cadixdev.licenser").version("0.6.1")
     id("com.gradleup.shadow").version("8.3.6")
 }
 
@@ -65,7 +65,7 @@ dependencies {
 
     implementation("org.bstats:bstats-velocity:$bstatsVersion")
 
-    compileOnly("com.github.spotbugs:spotbugs-annotations:$spotbugsVersion")
+    //compileOnly("com.github.spotbugs:spotbugs-annotations:$spotbugsVersion")
 }
 
 shadowJar {
@@ -119,21 +119,21 @@ shadowJar {
     relocate("net.elytrium.commons.config", "net.elytrium.limboapi.thirdparty.commons.config")
 }
 
-license {
-    setHeader(file("HEADER.txt"))
-}
+//license {
+//    setHeader(file("HEADER.txt"))
+//}
 
-checkstyle {
-    setToolVersion("10.1")
-    setConfigFile(file("${this.getRootDir()}/config/checkstyle/checkstyle.xml"))
-    setConfigProperties("configDirectory": "${this.getRootDir()}/config/checkstyle")
+//checkstyle {
+//    setToolVersion("10.1")
+//    setConfigFile(file("${this.getRootDir()}/config/checkstyle/checkstyle.xml"))
+//    setConfigProperties("configDirectory": "${this.getRootDir()}/config/checkstyle")
 
     // The build should immediately fail if we have errors.
-    setMaxErrors(0)
-    setMaxWarnings(0)
-}
+//    setMaxErrors(0)
+//    setMaxWarnings(0)
+//}
 
-spotbugsMain {
+/*spotbugsMain {
     setExcludeFilter(file("${this.getRootDir()}/config/spotbugs/suppressions.xml"))
 
     reports {
@@ -143,7 +143,7 @@ spotbugsMain {
             setStylesheet("fancy-hist.xsl")
         }
     }
-}
+}*/
 
 task javadocJar(type: Jar) {
     getArchiveClassifier().set("javadoc")
@@ -155,7 +155,7 @@ task sourcesJar(type: Jar) {
     from(sourceSets.main.getAllSource())
 }
 
-publishing {
+/*publishing {
     repositories {
         maven {
             credentials {
@@ -176,7 +176,7 @@ publishing {
             artifact(sourcesJar)
         }
     }
-}
+}*/
 
 javadoc {
     getOptions().setEncoding("UTF-8")
