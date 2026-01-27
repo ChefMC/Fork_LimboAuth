@@ -438,6 +438,10 @@ public class LimboAuth {
     eventManager.fireAndForget(new AuthPluginReloadEvent());
   }
 
+  public static Logger getLogger() {
+    return LOGGER;
+  }
+
   private List<String> filterCommands(List<String> commands) {
     return commands.stream().filter(command -> command.startsWith("/")).map(command -> command.substring(1)).collect(Collectors.toList());
   }

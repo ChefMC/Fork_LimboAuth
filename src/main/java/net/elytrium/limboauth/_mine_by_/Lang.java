@@ -1,6 +1,7 @@
 package net.elytrium.limboauth._mine_by_;
 
 import com.velocitypowered.api.proxy.Player;
+import net.elytrium.limboauth.LimboAuth;
 
 import java.util.*;
 
@@ -61,6 +62,9 @@ public class Lang {
 		Locale localeObj = player.getEffectiveLocale();
 		if (localeObj != null) {
 			locale = localeObj.toLanguageTag().replace("-", "_").toLowerCase(Locale.ROOT);
+			LimboAuth.getLogger().info("Language of {}: {}", player.getUsername(), locale);
+		} else {
+			LimboAuth.getLogger().info("Language of {}: null", player.getUsername());
 		}
 
 		if (locale != null) {
@@ -89,7 +93,7 @@ public class Lang {
 		}
 
 		// Default to English (final fallback)
-		playerLangs.put(player.getUniqueId(), "en");
+		playerLangs.put(player.getUniqueId(), "en"); // Commenting out isn't working :(
 		return "en";
 	}
 }
